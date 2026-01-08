@@ -1,0 +1,10 @@
+{
+  "web_scrapper": {
+      "cnn_news": true,
+      "bbc_news": true,
+      "nyt_news": true,
+      "frb_news": true,
+      "fxn_news": true,
+      "jcb_news": true
+  }
+}
