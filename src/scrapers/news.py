@@ -1,86 +1,153 @@
 import requests
 import json
 from bs4 import BeautifulSoup
+from pathlib import Path
+from typing import List,Dict
+
+
+#load config with proper path
+config_path = Path(__file__).parent.parent / 'configs' / 'config.json'
+
+try:
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config_data = json.load(f)
+except FileNotFoundError:
+    print(f'config.json not found at {config_path}')
+    config_data = {}
+
 
 
 class NewsScraper:
     def __init__(self, config_json):
-        self.config_json = config_json
+        #load config json
+        self.config = config_json
+        #create return list
+        self.titles_list: List[str] = []
 
-    def get_cnn_news(self)-> str:
-        #get cnn main headline news
-        target = requests.get('https://edition.cnn.com/')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        cnn_title = news_soup.find("h2",{"class":"container__title_url-text container_lead-package__title_url-text"}).text
-        return cnn_title
+    def _safe_scrape(self, url: str, tag: str, attrs: Dict) -> tuple:
+        """Helper to safely scrape with error handling"""
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, "html.parser")
 
-    def get_bbc_news(self)-> str:
-        #get bbc main headline news
-        target = requests.get('https://www.bbc.com/')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        bbc_title = news_soup.find("h2",{"class":"sc-fa814188-3 jaHqrc"}).text
-        return bbc_title
+            element = soup.find(tag, attrs)
+            if element:
+                #get link
+                title = element.text.strip()
 
-    def get_nyt_news(self)-> str:
-        #get NYT main headline news
-        target = requests.get('https://www.nytimes.com/section/world')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        nyt_title = news_soup.find("h3",{"class":"css-1ykb5sd e1hr934v2"}).text
-        return nyt_title
+                # Se o elemento for <a>, pega href direto
+                if tag == 'a':
+                    link = element.get('href', url)
+                else:
+                    # Senão, procura <a> dentro ou próximo
+                    a_tag = element.find('a') or element.find_parent('a')
+                    link = a_tag.get('href', url) if a_tag else url
 
-    def get_forbes_news(self)-> str:
-        #get forbes main headline news
-        target = requests.get('https://www.forbes.com/')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        forbes_title = news_soup.find("a", {"class": "qGitkxSR zPmmmf5g _436GZp59"}).text
-        return forbes_title
+                # Corrige links relativos
+                if link.startswith('/'):
+                    from urllib.parse import urljoin
+                    link = urljoin(url, link)
 
-    def get_foxnews_news(self)-> str:
-        target = requests.get('https://foxnews.com/')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        foxnews_title = news_soup.find("h3",{"class":"title"}).text
-        return foxnews_title
+                return title, link
+            else:
+                return f"[Element not found]", url
 
-    def get_jacobin_news(self)-> str:
-        target = requests.get('https://jacobin.com/')
-        news_soup = BeautifulSoup(target.text,"html.parser")
-        jacobin_title = news_soup.find("h2",{"class":"hm-dg__title hm-sd-py__title hm-sd-b-py__title"}).text
-        return jacobin_title
+        except Exception as e:
+            return f"[Error: {str(e)}]", url
 
+    def get_cnn_news(self) -> tuple:
+        #get CNN main headline with link
+        return self._safe_scrape(
+            'https://edition.cnn.com/',
+            "h2",
+            {"class": "container__title_url-text container_lead-package__title_url-text"}
+        )
 
+    def get_bbc_news(self) -> tuple:
+        #get BBC main headline
+        return self._safe_scrape(
+            'https://www.bbc.com/',
+            "h2",
+            {"class": "sc-fa814188-3 jaHqrc"}
+        )
 
-    try:
-        with open('config.json', 'r', encoding='utf-8') as f:
-            config_data = json.load(f)
-    except FileNotFoundError:
-        print('config.json not found')
+    def get_nyt_news(self) -> tuple:
+        #get NYT main headline
+        return self._safe_scrape(
+            'https://www.nytimes.com/section/world',
+            "h3",
+            {"class": "css-1ykb5sd e1hr934v2"}
+        )
 
-    titles_list = []
+    def get_forbes_news(self) -> tuple:
+        #et Forbes main headline
+        return self._safe_scrape(
+            'https://www.forbes.com/',
+            "a",
+            {"class": "qGitkxSR zPmmmf5g _436GZp59"}
+        )
 
-    def get_news(self,config_data:dict,titles_list:list) -> list:
+    def get_foxnews_news(self) -> tuple:
+        #get Fox News main headline
+        return self._safe_scrape(
+            'https://foxnews.com/',
+            "h3",
+            {"class": "title"}
+        )
 
-        if config_data["web_scrapper"]["ccn_news"]:
-            titles_list.append(self.get_cnn_news())
+    def get_jacobin_news(self) -> tuple:
+        #get Jacobin main headline
+        return self._safe_scrape(
+            'https://jacobin.com/',
+            "h2",
+            {"class": "hm-dg__title hm-sd-py__title hm-sd-b-py__title"}
+        )
 
-        if config_data["web_scrapper"]["bbc_news"]:
-            titles_list.append(self.get_bbc_news())
+    def get_news(self) -> List[tuple]:
+        """Fetch all enabled news sources"""
+        self.titles_list = []
 
-        if config_data["web_scrapper"]["nyt_news"]:
-            titles_list.append(self.get_nyt_news())
+        scrapers_config = self.config.get("web_scrapper", {})
 
-        if config_data["web_scrapper"]["frb_news"]:
-            titles_list.append(self.get_forbes_news())
+        if scrapers_config.get("cnn_news"):
+            print("Fetching CNN...")
+            title, link = self.get_cnn_news()  # ← Desempacota
+            self.titles_list.append(("CNN", title, link))  # ← Adiciona 3
 
-        if config_data["web_scrapper"]["fxn_news"]:
-            titles_list.append(self.get_foxnews_news())
+        if scrapers_config.get("bbc_news"):
+            print("Fetching BBC...")
+            title, link = self.get_bbc_news()
+            self.titles_list.append(("BBC", title, link))
 
-        if config_data["web_scrapper"]["jcb_news"]:
-            titles_list.append(self.get_jacobin_news())
+        if scrapers_config.get("nyt_news"):
+            print("Fetching NYT...")
+            title, link = self.get_nyt_news()
+            self.titles_list.append(("NYT", title, link))
 
+        if scrapers_config.get("frb_news"):
+            print("Fetching Forbes...")
+            title, link = self.get_forbes_news()
+            self.titles_list.append(("Forbes", title, link))
 
-        return titles_list
+        if scrapers_config.get("fxn_news"):
+            print("Fetching Fox News...")
+            title, link = self.get_foxnews_news()
+            self.titles_list.append(("Fox News", title, link))
+
+        if scrapers_config.get("jcb_news"):
+            print("Fetching Jacobin...")
+            title, link = self.get_jacobin_news()
+            self.titles_list.append(("Jacobin", title, link))
+
+        return self.titles_list
 
 
 if __name__ == '__main__':
-    test=NewsScraper
-    print(test)
+
+    test=NewsScraper(config_data)
+    news = test.get_news()
+    print("\nHeadlines \n")
+    for source, title, link in news:
+        print(f"{source}: {title}")
+        print(f"-> {link}\n")
