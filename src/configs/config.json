@@ -6,5 +6,11 @@
       "frb_news": true,
       "fxn_news": true,
       "jcb_news": true
+  },
+
+  "rrs_feeds": {
+      "cnn_rss": true,
+      "bbc_rss": true
   }
 }
+

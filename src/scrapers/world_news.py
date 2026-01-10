@@ -61,7 +61,7 @@ class NewsScraper:
         return self._safe_scrape(
             'https://edition.cnn.com/',
             "h2",
-            {"class": "container__title_url-text container_lead-package__title_url-text"}
+            {"class": "container__title_url-text container_spotlight-package__title_url-text"}
         )
 
     def get_bbc_news(self) -> tuple:
@@ -112,8 +112,8 @@ class NewsScraper:
 
         if scrapers_config.get("cnn_news"):
             print("Fetching CNN...")
-            title, link = self.get_cnn_news()  # ← Desempacota
-            self.titles_list.append(("CNN", title, link))  # ← Adiciona 3
+            title, link = self.get_cnn_news()
+            self.titles_list.append(("CNN", title, link))
 
         if scrapers_config.get("bbc_news"):
             print("Fetching BBC...")
