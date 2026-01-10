@@ -46,7 +46,7 @@ class RssFeed:
 
     def get_news(self) -> List[tuple]:
         """Fetch all enabled news sources"""
-        self.titles_list = []
+        self.news_list = []
 
         scrapers_config = self.config_json.get("web_scrapper", {})
 

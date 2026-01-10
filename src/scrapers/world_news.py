@@ -22,7 +22,7 @@ class NewsScraper:
         #load config json
         self.config = config_json
         #create return list
-        self.titles_list: List[str] = []
+        self.news_list: List[str] = []
 
     def _safe_scrape(self, url: str, tag: str, attrs: Dict) -> tuple:
         """Helper to safely scrape with error handling"""
@@ -106,41 +106,41 @@ class NewsScraper:
 
     def get_news(self) -> List[tuple]:
         """Fetch all enabled news sources"""
-        self.titles_list = []
+        self.news_list = []
 
         scrapers_config = self.config.get("web_scrapper", {})
 
         if scrapers_config.get("cnn_news"):
             print("Fetching CNN...")
             title, link = self.get_cnn_news()
-            self.titles_list.append(("CNN", title, link))
+            self.news_list.append(("CNN", title, link))
 
         if scrapers_config.get("bbc_news"):
             print("Fetching BBC...")
             title, link = self.get_bbc_news()
-            self.titles_list.append(("BBC", title, link))
+            self.news_list.append(("BBC", title, link))
 
         if scrapers_config.get("nyt_news"):
             print("Fetching NYT...")
             title, link = self.get_nyt_news()
-            self.titles_list.append(("NYT", title, link))
+            self.news_list.append(("NYT", title, link))
 
         if scrapers_config.get("frb_news"):
             print("Fetching Forbes...")
             title, link = self.get_forbes_news()
-            self.titles_list.append(("Forbes", title, link))
+            self.news_list.append(("Forbes", title, link))
 
         if scrapers_config.get("fxn_news"):
             print("Fetching Fox News...")
             title, link = self.get_foxnews_news()
-            self.titles_list.append(("Fox News", title, link))
+            self.news_list.append(("Fox News", title, link))
 
         if scrapers_config.get("jcb_news"):
             print("Fetching Jacobin...")
             title, link = self.get_jacobin_news()
-            self.titles_list.append(("Jacobin", title, link))
+            self.news_list.append(("Jacobin", title, link))
 
-        return self.titles_list
+        return self.news_list
 
 
 if __name__ == '__main__':
