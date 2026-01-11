@@ -1,5 +1,4 @@
 import json
-import requests
 import feedparser
 from pathlib import Path
 from typing import List, Tuple
@@ -13,21 +12,6 @@ try:
 except FileNotFoundError:
     print(f'config.json not found at {config_path}')
     config_data = {}
-
-def get_crypto():
-    url = 'https://api.coingecko.com/api/v3/simple/price'
-    params = {'ids': 'bitcoin,ethereum', 'vs_currencies': 'usd'}
-    response = requests.get(url, params=params)
-    return response.json()
-
-
-
-
-# class MoneyInfo:
-#     def __init__(self, symbol, amount, currency):
-#         self.symbol = symbol
-#         self.amount = amount
-
 
 
 class RssScienceFeed:
@@ -54,27 +38,27 @@ class RssScienceFeed:
 
 
 
-    def bloomberg_rss(self) -> List[Tuple[str, str]]:
-        """Get Bloomberg RSS feed (top x limit set)"""
+    def science_daily_rss(self) -> List[Tuple[str, str]]:
+        """Get Science Daily RSS feed (top x limit set)"""
         return self._fetch_rss(
-            'https://feeds.bloomberg.com/markets/news.rss',
-            'Bloomberg',
+            'https://www.sciencedaily.com/rss/all.xml',
+            'Science Daily',
             limit=2
         )
 
-    def financial_times_rss(self) -> List[Tuple[str, str]]:
-        """Get Financial Times RSS feed (top x limit set)"""
+    def nasa_rss(self) -> List[Tuple[str, str]]:
+        """Get NASA RSS feed (top x limit set)"""
         return self._fetch_rss(
-            'https://www.ft.com/?format=rss',
-            'Financial Times',
+            'https://www.nasa.gov/rss/dyn/breaking_news.rss',
+            'NASA',
             limit=2
         )
 
-    def coindesk_rss(self) -> List[Tuple[str, str]]:
-        """Get CoinDesk RSS feed (top x limit set)"""
+    def nature_rss(self) -> List[Tuple[str, str]]:
+        """Get Nature RSS feed (top x limit set)"""
         return self._fetch_rss(
-                'https://www.coindesk.com/arc/outboundfeeds/rss',
-                'CoinDesk',
+                'https://www.nature.com/nature.rss',
+                'Nature',
                 limit=2
         )
 
@@ -86,20 +70,20 @@ class RssScienceFeed:
 
         rss_config = self.config.get("rss_feeds", {})
 
-        if rss_config.get("blb_rss"):
-            print("Fetching Bloomberg RSS...")
-            for title, link in self.bloomberg_rss():
-                self.news_list.append(("Bloomberg", title, link))
+        if rss_config.get("sci_rss"):
+            print("Fetching Science Daily RSS...")
+            for title, link in self.science_daily_rss():
+                self.news_list.append(("Science Daily", title, link))
 
-        if rss_config.get("fnt_rss"):
-            print("Fetching Financial Times RSS...")
-            for title, link in self.financial_times_rss():
-                self.news_list.append(("Financial Times", title, link))
+        if rss_config.get("nas_rss"):
+            print("Fetching NASA RSS...")
+            for title, link in self.nasa_rss():
+                self.news_list.append(("NASA", title, link))
 
-        if rss_config.get("cnd_rss"):
-            print("Fetching CoinDesk RSS...")
-            for title, link in self.coindesk_rss():
-                self.news_list.append(("CoinDesk", title, link))
+        if rss_config.get("nat_rss"):
+            print("Fetching Nature RSS...")
+            for title, link in self.nature_rss():
+                self.news_list.append(("Nature", title, link))
 
         return self.news_list
 
@@ -112,7 +96,3 @@ if __name__ == "__main__":
     for source, title, link in news:
         print(f"{source}: {title}")
         print(f"->{link}\n")
-
-    teste=get_crypto()
-    for key, value in teste.items():
-        print(f"{key}: {value}")

@@ -36,15 +36,15 @@ class NewsScraper:
                 #get link
                 title = element.text.strip()
 
-                # Se o elemento for <a>, pega href direto
+                # if element is <a>, get href
                 if tag == 'a':
                     link = element.get('href', url)
                 else:
-                    # Senão, procura <a> dentro ou próximo
+
                     a_tag = element.find('a') or element.find_parent('a')
                     link = a_tag.get('href', url) if a_tag else url
 
-                # Corrige links relativos
+
                 if link.startswith('/'):
                     from urllib.parse import urljoin
                     link = urljoin(url, link)
@@ -61,7 +61,7 @@ class NewsScraper:
         return self._safe_scrape(
             'https://edition.cnn.com/',
             "h2",
-            {"class": "container__title_url-text container_spotlight-package__title_url-text"}
+            {"class": "container__title_url-text container_lead-plus-headlines__title_url-text"}
         )
 
     def get_bbc_news(self) -> tuple:
@@ -104,8 +104,16 @@ class NewsScraper:
             {"class": "hm-dg__title hm-sd-py__title hm-sd-b-py__title"}
         )
 
+    def get_onion_news(self) -> tuple:
+        #get Onion main headline
+        return self._safe_scrape(
+            'https://theonion.com/',
+            "h2",
+            {"class": "has-link-color wp-elements-13454a57c0595c9e244f5bad2171ee90 wp-block-post-title has-text-color has-primary-2-color has-bravo-font-size has-rocky-compressed-font-family"}
+        )
+
     def get_news(self) -> List[tuple]:
-        """Fetch all enabled news sources"""
+        """Fetch all enabled news sources from config json"""
         self.news_list = []
 
         scrapers_config = self.config.get("web_scrapper", {})
@@ -139,6 +147,11 @@ class NewsScraper:
             print("Fetching Jacobin...")
             title, link = self.get_jacobin_news()
             self.news_list.append(("Jacobin", title, link))
+
+        if scrapers_config.get("ono_news"):
+            print("Fetching The Onion...")
+            title, link = self.get_onion_news()
+            self.news_list.append(("The Onion", title, link))
 
         return self.news_list
 

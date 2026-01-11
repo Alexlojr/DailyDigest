@@ -1,16 +1,31 @@
 {
   "web_scrapper": {
-      "cnn_news": true,
-      "bbc_news": true,
+      "cnn_news": false,
+      "bbc_news": false,
       "nyt_news": true,
       "frb_news": true,
       "fxn_news": true,
-      "jcb_news": true
+      "jcb_news": true,
+      "ono_news": false
   },
 
-  "rrs_feeds": {
+  "rss_feeds": {
       "cnn_rss": true,
-      "bbc_rss": true
+      "bbc_rss": true,
+      "nyt_rss": true,
+      "epn_rss": true,
+      "bsp_rss": true,
+      "sky_rss": true,
+      "tec_rss": true,
+      "hac_rss": true,
+      "ars_rss": true,
+      "sci_rss": true,
+      "nas_rss": true,
+      "nat_rss": true,
+      "blb_rss": true,
+      "fnt_rss": true,
+      "cnd_rss": true
+
   }
 }
 
