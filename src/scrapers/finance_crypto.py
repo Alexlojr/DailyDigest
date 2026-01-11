@@ -1,8 +1,9 @@
 import json
 import requests
 import feedparser
+from bs4 import BeautifulSoup
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 #load config with proper path
 config_path = Path(__file__).parent.parent / 'configs' / 'config.json'
@@ -14,19 +15,60 @@ except FileNotFoundError:
     print(f'config.json not found at {config_path}')
     config_data = {}
 
+
+    def _safe_scrape(url: str, tag: str, attrs: Dict) -> tuple:
+        """Helper to safely scrape with error handling"""
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            element = soup.find(tag, attrs)
+            if element:
+                #get link
+                title = element.text.strip()
+
+                # if element is <a>, get href
+                if tag == 'a':
+                    link = element.get('href', url)
+                else:
+
+                    a_tag = element.find('a') or element.find_parent('a')
+                    link = a_tag.get('href', url) if a_tag else url
+
+
+                if link.startswith('/'):
+                    from urllib.parse import urljoin
+                    link = urljoin(url, link)
+
+                return title, link
+            else:
+                return f"[Element not found]", url
+
+        except Exception as e:
+            return f"[Error: {str(e)}]", url
+
 def get_crypto():
     url = 'https://api.coingecko.com/api/v3/simple/price'
     params = {'ids': 'bitcoin,ethereum', 'vs_currencies': 'usd'}
     response = requests.get(url, params=params)
     return response.json()
 
+def get_exchange_rate():
+
+    return _safe_scrape(
+        'https://www.oanda.com/currency-converter/en/?from=USD&to=GBP&amount=1',
+        'input',
+        {"class":'MuiInputBase-input MuiFilledInput-input'}
+    )
 
 
 
-# class MoneyInfo:
-#     def __init__(self, symbol, amount, currency):
-#         self.symbol = symbol
-#         self.amount = amount
+
+
+
+
+
 
 
 
@@ -116,3 +158,5 @@ if __name__ == "__main__":
     teste=get_crypto()
     for key, value in teste.items():
         print(f"{key}: {value}")
+
+    print(get_exchange_rate())
