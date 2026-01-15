@@ -1,9 +1,9 @@
 import json
 import requests
 import feedparser
-from bs4 import BeautifulSoup
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple
+
 
 #load config with proper path
 config_path = Path(__file__).parent.parent / 'configs' / 'config.json'
@@ -16,51 +16,49 @@ except FileNotFoundError:
     config_data = {}
 
 
-    def _safe_scrape(url: str, tag: str, attrs: Dict) -> tuple:
-        """Helper to safely scrape with error handling"""
+class MoneyInfo:
+    def __init__(self,config_json):
+        self.config = config_json
+        self.list = {}
+
+    def get_crypto(self):
+        url = 'https://api.coingecko.com/api/v3/simple/price'
+        params = {'ids': 'bitcoin,ethereum', 'vs_currencies': 'usd'}
+        response = requests.get(url, params=params)
+        return response.json()
+
+
+    def get_exchange_rates(self):
+        """Get exchange rates - NO API KEY needed!"""
         try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
+            url = 'https://api.exchangerate-api.com/v4/latest/USD'
+            response = requests.get(url)
+            data = response.json()
 
-            element = soup.find(tag, attrs)
-            if element:
-                #get link
-                title = element.text.strip()
+            rates = data['rates']
+            return {
+                'USD -> EUR': round(rates['EUR'], 2),
+                'USD -> GBP': round(rates['GBP'], 2),
+                'USD -> JPY': round(rates['JPY'], 2),
+                'USD -> CNH': round(rates['CNH'], 2),
+                'USD -> CAD': round(rates['CAD'], 2),
+                'USD -> CHF': round(rates['CHF'], 2),
+                'USD -> BRL': round(rates['BRL'], 2),
+                'USD -> RUB': round(rates['RUB'], 2),
 
-                # if element is <a>, get href
-                if tag == 'a':
-                    link = element.get('href', url)
-                else:
-
-                    a_tag = element.find('a') or element.find_parent('a')
-                    link = a_tag.get('href', url) if a_tag else url
+            }
+        except Exception as e :
+            print(f"Error fetching rates: {e}")
+            return {}
 
 
-                if link.startswith('/'):
-                    from urllib.parse import urljoin
-                    link = urljoin(url, link)
 
-                return title, link
-            else:
-                return f"[Element not found]", url
+    def get_money(self):
+        self.list = {}
 
-        except Exception as e:
-            return f"[Error: {str(e)}]", url
-
-def get_crypto():
-    url = 'https://api.coingecko.com/api/v3/simple/price'
-    params = {'ids': 'bitcoin,ethereum', 'vs_currencies': 'usd'}
-    response = requests.get(url, params=params)
-    return response.json()
-
-def get_exchange_rate():
-
-    return _safe_scrape(
-        'https://www.oanda.com/currency-converter/en/?from=USD&to=GBP&amount=1',
-        'input',
-        {"class":'MuiInputBase-input MuiFilledInput-input'}
-    )
+        list.append(self.get_crypto())
+        list.append(self.get_exchange_rates())
+        return list
 
 
 
@@ -69,10 +67,7 @@ def get_exchange_rate():
 
 
 
-
-
-
-class RssScienceFeed:
+class RssFinanceFeed:
     def __init__(self, config_json):
         self.config = config_json
         self.news_list = []
@@ -147,16 +142,24 @@ class RssScienceFeed:
 
 
 if __name__ == "__main__":
-    rss = RssScienceFeed(config_data)
-    news = rss.get_news()
+    # rss = RssFinanceFeed(config_data)
+    # news = rss.get_news()
+    #
+    # print("\nRSS Headlines\n")
+    # for source, title, link in news:
+    #     print(f"{source}: {title}")
+    #     print(f"->{link}\n")
 
-    print("\nRSS Headlines\n")
-    for source, title, link in news:
-        print(f"{source}: {title}")
-        print(f"->{link}\n")
+    money = MoneyInfo(config_data)
 
-    teste=get_crypto()
-    for key, value in teste.items():
-        print(f"{key}: {value}")
 
-    print(get_exchange_rate())
+    rates = money.get_money()
+    print(rates)
+    # for pair, rate in rates.items():
+    #     print(f"$1 {pair}: {rate}")
+    #
+    # ratec = money.get_crypto()
+    # for criptomoeda, dados in ratec.items():
+    #     preco = dados['usd']
+    #     print(f"1 {criptomoeda}: ${preco} USD ")
+

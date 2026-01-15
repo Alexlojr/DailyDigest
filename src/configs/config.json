@@ -26,6 +26,11 @@
       "fnt_rss": true,
       "cnd_rss": true
 
+  },
+  "money": {
+      "exc": true,
+      "btc": true,
+      "eth": true
   }
 }
 
