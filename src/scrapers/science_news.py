@@ -43,7 +43,7 @@ class RssScienceFeed:
         return self._fetch_rss(
             'https://www.sciencedaily.com/rss/all.xml',
             'Science Daily',
-            limit=2
+            limit=3
         )
 
     def nasa_rss(self) -> List[Tuple[str, str]]:
@@ -51,15 +51,15 @@ class RssScienceFeed:
         return self._fetch_rss(
             'https://www.nasa.gov/rss/dyn/breaking_news.rss',
             'NASA',
-            limit=2
+            limit=3
         )
 
     def nature_rss(self) -> List[Tuple[str, str]]:
         """Get Nature RSS feed (top x limit set)"""
         return self._fetch_rss(
-                'https://www.nature.com/nature.rss',
-                'Nature',
-                limit=2
+            'https://www.nature.com/nature.rss',
+            'Nature',
+            limit=3
         )
 
     def get_news(self) -> List[Tuple[str, str, str]]:

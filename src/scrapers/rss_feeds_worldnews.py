@@ -43,7 +43,7 @@ class RssWorldFeed:
         return self._fetch_rss(
             'http://rss.cnn.com/rss/edition.rss',
             'CNN',
-            limit=2
+            limit=3
         )
 
     def bbc_rss(self) -> List[Tuple[str, str]]:
@@ -51,15 +51,15 @@ class RssWorldFeed:
         return self._fetch_rss(
             'http://feeds.bbci.co.uk/news/world/rss.xml',
             'BBC',
-            limit=2
+            limit=3
         )
 
     def nyt_rss(self) -> List[Tuple[str, str]]:
         """Get NYT RSS feed (top x limit set)"""
         return self._fetch_rss(
-                'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-                'NYT',
-                limit=2
+            'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+            'NYT',
+            limit=23
         )
 
     def get_news(self) -> List[Tuple[str, str, str]]:

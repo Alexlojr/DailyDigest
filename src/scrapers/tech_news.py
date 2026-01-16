@@ -43,7 +43,7 @@ class RssTechFeed:
         return self._fetch_rss(
             'https://techcrunch.com/feed/',
             'TechCrunch',
-            limit=2
+            limit=3
         )
 
     def hackernews_rss(self) -> List[Tuple[str, str]]:
@@ -51,15 +51,15 @@ class RssTechFeed:
         return self._fetch_rss(
             'https://hnrss.org/frontpage',
             'Hacker News',
-            limit=2
+            limit=3
         )
 
     def arstechnica_rss(self) -> List[Tuple[str, str]]:
         """Get Ars Technica RSS feed (top x limit set)"""
         return self._fetch_rss(
-                'https://feeds.arstechnica.com/arstechnica/index',
-                'Ars Technica',
-                limit=2
+            'https://feeds.arstechnica.com/arstechnica/index',
+            'Ars Technica',
+            limit=3
         )
 
     def get_news(self) -> List[Tuple[str, str, str]]:

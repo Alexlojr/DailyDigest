@@ -1,36 +1,53 @@
 {
   "web_scrapper": {
-      "cnn_news": false,
-      "bbc_news": false,
-      "nyt_news": true,
-      "frb_news": true,
-      "fxn_news": true,
-      "jcb_news": true,
-      "ono_news": false
+    "cnn_news": false,
+    "bbc_news": false,
+    "nyt_news": true,
+    "frb_news": true,
+    "fxn_news": true,
+    "jcb_news": true,
+    "ono_news": false
   },
-
   "rss_feeds": {
-      "cnn_rss": true,
-      "bbc_rss": true,
-      "nyt_rss": true,
-      "epn_rss": true,
-      "bsp_rss": true,
-      "sky_rss": true,
-      "tec_rss": true,
-      "hac_rss": true,
-      "ars_rss": true,
-      "sci_rss": true,
-      "nas_rss": true,
-      "nat_rss": true,
-      "blb_rss": true,
-      "fnt_rss": true,
-      "cnd_rss": true
+    "cnn_rss": true,
+    "bbc_rss": true,
+    "nyt_rss": false,
 
+    "epn_rss": true,
+    "bsp_rss": false,
+    "sky_rss": false,
+
+    "tec_rss": true,
+    "hac_rss": false,
+    "ars_rss": false,
+
+    "sci_rss": true,
+    "nas_rss": false,
+    "nat_rss": false,
+
+    "blb_rss": true,
+    "fnt_rss": false,
+    "cnd_rss": false
   },
   "money": {
-      "exc": true,
-      "btc": true,
-      "eth": true
+    "crypto": true,
+    "exchange": true,
+    "metals": false,
+    "stocks": false
+  },
+  "entertainment": {
+    "movies": true,
+    "tv_series": true,
+    "games": true,
+    "anime": false,
+    "music": true,
+    "books": false,
+    "comics": false,
+    "theater": false,
+    "celebrity": false,
+    "tabletop": false,
+    "pop_culture": false,
+    "art/museums": false,
+    "podcast": false
   }
 }
-

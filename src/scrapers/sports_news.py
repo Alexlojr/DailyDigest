@@ -43,7 +43,7 @@ class RssSportsFeed:
         return self._fetch_rss(
             'https://www.espn.com/espn/rss/news',
             'ESPN',
-            limit=2
+            limit=3
         )
 
     def bbc_sports_rss(self) -> List[Tuple[str, str]]:
@@ -51,7 +51,7 @@ class RssSportsFeed:
         return self._fetch_rss(
             'http://feeds.bbci.co.uk/sport/rss.xml',
             'BBC Sports',
-            limit=2
+            limit=3
         )
 
     def sky_sports_rss(self) -> List[Tuple[str, str]]:
@@ -59,7 +59,7 @@ class RssSportsFeed:
         return self._fetch_rss(
                 'http://feeds.skynews.com/feeds/rss/sports.xml',
             'Sky Sports',
-            limit=2
+            limit=3
         )
 
 
