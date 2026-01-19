@@ -49,5 +49,8 @@
     "pop_culture": false,
     "art/museums": false,
     "podcast": false
+  },
+  "weather": {
+    "city": "London"
   }
 }
