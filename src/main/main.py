@@ -3,7 +3,10 @@ import smtplib
 from email.message import EmailMessage
 import json
 from pathlib import Path
+from dotenv import load_dotenv
 from src.scrapers.finance_crypto import RssFinanceFeed
+
+
 
 config_path = Path(__file__).parent.parent / 'configs' / 'config.json'
 
@@ -13,6 +16,8 @@ try:
 except FileNotFoundError:
     print(f'config.json not found at {config_path}')
     config_data = {}
+
+
 
 
 
