@@ -12,19 +12,15 @@
     "cnn_rss": true,
     "bbc_rss": true,
     "nyt_rss": false,
-
     "epn_rss": true,
     "bsp_rss": false,
     "sky_rss": false,
-
     "tec_rss": true,
     "hac_rss": false,
     "ars_rss": false,
-
     "sci_rss": true,
     "nas_rss": false,
     "nat_rss": false,
-
     "blb_rss": true,
     "fnt_rss": false,
     "cnd_rss": false
@@ -33,14 +29,14 @@
     "crypto": true,
     "exchange": true,
     "metals": false,
-    "stocks": false
+    "stocks": true
   },
   "entertainment": {
     "movies": true,
-    "tv_series": true,
+    "tv_series": false,
     "games": true,
     "anime": false,
-    "music": true,
+    "music": false,
     "books": false,
     "comics": false,
     "theater": false,
@@ -51,6 +47,6 @@
     "podcast": false
   },
   "weather": {
-    "city": "London"
+    "city": "New York"
   }
 }

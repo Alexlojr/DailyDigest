@@ -12,8 +12,6 @@ screenshot_dir = Path(__file__).parent.parent / 'imgs'
 screenshot_dir.mkdir(parents=True, exist_ok=True)
 file_path = screenshot_dir / "morning_weather.png"
 
-print(f"Screenshot will be saved to: {file_path.absolute()}")
-
 # Load config
 config_path = Path(__file__).parent.parent / 'configs' / 'config.json'
 
@@ -24,43 +22,58 @@ except FileNotFoundError:
     print(f'config.json not found at {config_path}')
     config_data = {}
 
-city = config_data['weather']['city']
+city = config_data.get('weather', {}).get('city', 'London')
 
 
+def get_chrome_options(headless=True):
+    """Get Chrome options with anti-detection"""
+    chrome_options = webdriver.ChromeOptions()
 
-# ===== CHROME OPTIONS =====
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_experimental_option("detach", True)
+    # Headless mode for automation (set to False to see browser)
+    if headless:
+        chrome_options.add_argument('--headless=new')
+        chrome_options.add_argument('--window-size=1920,1080')
+    else:
+        chrome_options.add_experimental_option("detach", True)
 
-# Force english
-chrome_options.add_argument('--lang=en-US')
-chrome_options.add_experimental_option('prefs', {
-    'intl.accept_languages': 'en-US,en',
-    'profile.default_content_setting_values.geolocation': 2
-})
+    # Force english
+    chrome_options.add_argument('--lang=en-US')
+    chrome_options.add_experimental_option('prefs', {
+        'intl.accept_languages': 'en-US,en',
+        'profile.default_content_setting_values.geolocation': 2
+    })
 
-# Anti-bot
-chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-chrome_options.add_experimental_option('useAutomationExtension', False)
+    # Anti-bot detection
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
 
-driver = webdriver.Chrome(options=chrome_options)
+    # Performance optimizations
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+
+    return chrome_options
 
 
-
-def weather_mode():
+def weather_mode(driver):
     """Switch to radar mode"""
-    wait = WebDriverWait(driver, 20)
-    radar_button = wait.until(
-        EC.element_to_be_clickable((By.CLASS_NAME, 'rain'))
-    )
-    radar_button.click()
-    print('Radar button clicked')
-    time.sleep(3)
+    try:
+        wait = WebDriverWait(driver, 20)
+        radar_button = wait.until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'rain'))
+        )
+        radar_button.click()
+        print('   ✓ Radar mode activated')
+        time.sleep(3)
+        return True
+    except Exception as e:
+        print(f'   ✗ Failed to activate radar mode: {e}')
+        return False
 
 
-def searchbar_search():
-    """Search with click by coordinates"""
+def searchbar_search(driver, city):
+    """Search for city"""
     try:
         wait = WebDriverWait(driver, 10)
         search_box = wait.until(
@@ -76,90 +89,128 @@ def searchbar_search():
             search_box.send_keys(char)
             time.sleep(0.15)
 
-        print(f'Typed: {city}')
+        print(f'   ✓ Typed: {city}')
         time.sleep(2)
 
-
+        # Click first dropdown result using coordinates
         try:
-
             location = search_box.location
             size = search_box.size
-
 
             x_offset = size['width'] // 2
             y_offset = size['height'] + 10
 
-            # Move mouse e clica
+            # Move and click
             actions = ActionChains(driver)
             actions.move_to_element(search_box).perform()
             time.sleep(0.3)
             actions.move_by_offset(0, y_offset).click().perform()
 
-            print('Clicked dropdown by coordinates')
+            print('   ✓ Selected city from dropdown')
             time.sleep(3)
             return True
 
         except Exception as e:
-            print(f"Coordinate click failed: {e}")
+            print(f"   ⚠️  Coordinate click failed: {e}")
             return False
 
     except Exception as e:
-        print(f"Search failed: {e}")
+        print(f"   ✗ Search failed: {e}")
         return False
 
 
-def take_screenshot():
+def take_screenshot(driver):
     """Take and save screenshot"""
     try:
-        print(f"Taking screenshot...")
         driver.save_screenshot(str(file_path))
-
-        print(f"Screenshot saved to: {file_path.absolute()}")
 
         if file_path.exists():
             size = file_path.stat().st_size / 1024
-            print(f"File size: {size:.1f} KB")
+            print(f"   ✓ Screenshot saved: {file_path.name} ({size:.1f} KB)")
             return True
         else:
-            print("Screenshot file not found!")
+            print("   ✗ Screenshot file not created!")
             return False
 
     except Exception as e:
-        print(f"Screenshot failed: {e}")
+        print(f"   ✗ Screenshot failed: {e}")
         return False
 
 
-if __name__ == '__main__':
+def capture_weather_screenshot(headless=True):
+    """
+    Main function to capture weather screenshot
+
+    Args:
+        headless: Run browser in headless mode (True for automation)
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    driver = None
+
     try:
+        print("\n🌤️  WEATHER SCREENSHOT CAPTURE")
+        print("-" * 50)
+
+        # Initialize driver
+        chrome_options = get_chrome_options(headless=headless)
+        driver = webdriver.Chrome(options=chrome_options)
+
         # 1. Open site
+        print("1. Opening Ventusky...")
         driver.get("https://www.ventusky.com")
-        driver.fullscreen_window()
-        print("Site opened")
+        if not headless:
+            driver.fullscreen_window()
+        else:
+            driver.set_window_size(1920, 1080)
         time.sleep(3)
+        print("   ✓ Site loaded")
 
         # 2. Switch to rain radar
-        weather_mode()
+        print("2. Switching to radar mode...")
+        if not weather_mode(driver):
+            return False
 
-        # 3. Search city (SOLUÇÃO 2)
-        if searchbar_search():
-            print("Search successful")
-        else:
-            print("Search failed")
+        # 3. Search city
+        print(f"3. Searching for {city}...")
+        if not searchbar_search(driver, city):
+            print("   ⚠️  Search failed, but continuing...")
 
-        # 4. Wait for map to fully load
+        # 4. Wait for map to load
+        print("4. Waiting for map to render...")
+        time.sleep(5)
 
         # 5. Take screenshot
-        if take_screenshot():
-            print("\nALL DONE!")
+        print("5. Capturing screenshot...")
+        success = take_screenshot(driver)
+
+        print("-" * 50)
+        if success:
+            print("✅ WEATHER SCREENSHOT COMPLETE!\n")
         else:
-            print("\nScreenshot failed")
+            print("❌ SCREENSHOT FAILED!\n")
+
+        return success
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\n❌ ERROR: {e}")
         import traceback
-
         traceback.print_exc()
+        return False
 
     finally:
-        print("\nBrowser will stay open. Close manually or uncomment driver.quit()")
-        driver.quit()
+        if driver:
+            driver.quit()
+
+
+# For backwards compatibility
+def main():
+    """Legacy main function - calls the new function"""
+    return capture_weather_screenshot(headless=False)
+
+
+if __name__ == '__main__':
+    # Run with browser visible for testing
+    # For production, use: capture_weather_screenshot(headless=True)
+    capture_weather_screenshot(headless=False)
